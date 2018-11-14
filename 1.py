@@ -8,4 +8,6 @@ code="utf-8"
 r=requests.get(url)
 r.raise_for_status()
 r.encoding=code
-print(r.text)
+#print(r.text)
+soup = BeautifulSoup(r)
+soup.find_all( 'tr' )
