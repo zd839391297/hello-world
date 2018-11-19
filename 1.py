@@ -26,18 +26,17 @@ booksheet.write(0,10,'出版国家或地区')
 booksheet.write(0,11,'出版周期')
 booksheet.write(0,12, '出版年份')
 booksheet.write(0,13, '年文章数')'''
-n=30
-while n<31:
+n=33
+while n<40:
     url="http://www.letpub.com.cn/index.php?journalid="+str(n)+"&page=journalapp&view=detail"
     code="UTF-8"
 
     r=requests.get(url)
     r.raise_for_status()
     r.encoding=code
-    soup = BeautifulSoup(r.text,'html.parser')
+    soup = BeautifulSoup(r.text,'lxml')
     soup_body=soup.body
-    soup_div=soup_body.div
-    soup_1_find=soup_div.next_sibling
+    soup_1_find=soup_body.div.next_sibling
     i=0
     while i <10:
         soup_1_find=soup_1_find.next_sibling
@@ -59,4 +58,4 @@ while n<31:
         soup_4_find=soup_4_find.next_sibling
         i=i+1
     n=n+1
-newWb.save("test_xlwt.xlsx")
+newWb.save("test_xlwt.xls")
