@@ -1,4 +1,4 @@
-# 本程序适用于查询除名称外的其他数据，数据采用每采集10个保存一次
+# 本程序适用于爬取Letpub的数据库，数据采用每采集10个保存一次
 
 # 导入库requests、beautifulsoup、xlrd（用于读execl）、xlutils(用于写execl)
 import requests
@@ -27,7 +27,7 @@ booksheet = newWb.get_sheet(sheet_number)
 code = "utf-8"
 
 # 输入要查询的数据范围，该网站的数据范围为0-1057，注意每10个储存一次
-start = 0
+start = 1
 end = 1057
 
 # 开始循环爬取数据
@@ -59,12 +59,54 @@ for i in range(start, end):
                 soup_3_find = soup_3_find.next_sibling
         except AttributeError:
             continue
+            
+        # 有用的信息域
         soup_4_find = soup_3_find.tbody.tr.next_sibling
-        for i in range(14):
 
-            # 写入excel相应列
+        # 写入名称到excel相应列
+        soup_5_find = soup_4_find.span
+        booksheet.write(n, 0, soup_5_find.a.string)
+        booksheet.write(n, 1, soup_5_find.font.string)
+
+        # 写入除名称之外的信息到excel相应列
+        # 如果不执行此步而执行以下操作，需要先执行以下代码：
+        # for i in range(1, 15):
+        #     soup_4_find = soup_4_find.next_sibling
+        for i in range(1, 15):
             booksheet.write(n, i, soup_4_find.td.next_sibling.string)
             soup_4_find = soup_4_find.next_sibling
+
+        # 写入中科院SCI期刊分区(最新版本)到execl相应列
+        soup_6_find = soup_4_find.next_sibling.td.next_sibling.table.tr.next_sibling.td
+        soup_7_find = soup_6_find.next_sibling
+        soup_8_find = soup_7_find.next_sibling
+        soup_9_find = soup_8_find.next_sibling
+
+        # 大类学科
+        booksheet.write(n, 15, soup_6_find.next_element)
+
+        # 大类学科分区
+        booksheet.write(n, 16, soup_6_find.span.string)
+
+        # 小类学科
+        booksheet.write(n, 17, soup_7_find.table.tr.td.get_text(strip=True))
+
+        # 小类学科分区
+        booksheet.write(n, 18, soup_7_find.table.tr.td.next_sibling.string)
+
+        # 是否为top期刊
+        booksheet.write(n, 19, soup_8_find.string)
+
+        # 是否为综述期刊
+        booksheet.write(n, 20, soup_9_find.string)
+
+        # 写入SCI期刊coverage
+        soup_10_find = soup_4_find.next_sibling.next_sibling
+        booksheet.write(n, 21, soup_10_find.td.next_sibling.a.string)
+
+        # 写入PubMed Central (PMC)链接
+        soup_11_find = soup_10_find.next_sibling
+        booksheet.write(n, 22, soup_11_find.td.next_sibling.a.string)
 
     # 保存内存中的excel表
     newWb.save("test_xlwt.xls")

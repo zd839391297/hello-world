@@ -1,4 +1,4 @@
-# 本程序适用于查询除名称外的其他数据，数据采用一次保留
+# 本程序适用于Letpub网站的数据，数据采用一次保存
 
 # 导入库requests、beautifulsoup、xlrd（用于读execl）、xlutils(用于写execl)
 import requests
@@ -13,7 +13,7 @@ from xlutils.copy import copy
 # workbook = xlwt.Workbook(encoding='utf-8')
 # booksheet = workbook.add_sheet('test case', cell_overwrite_ok=True)
 # booksheet.write(0,0,'期刊名字')
-oldWb = xlrd.open_workbook('test_xlwt.xls')
+oldWb = xlrd.open_workbook('1.xls')
 
 # 在内存区复制一份原表格文件
 newWb = copy(oldWb)
@@ -26,9 +26,9 @@ booksheet = newWb.get_sheet(sheet_number)
 # 定义requests制作的html页面字符编码，如无特殊要求，可不修改设置
 code = "utf-8"
 
-# 输入要查询的数据范围，该网站的数据范围为0-10568
-start = 10568
-end = 10570
+# 输入要查询的数据范围，该网站的数据范围为0-10567
+start = 1
+end = 3
 
 # 开始循环爬取数据
 for n in range(start, end):
@@ -58,12 +58,52 @@ for n in range(start, end):
             soup_3_find = soup_3_find.next_sibling
     except AttributeError:
         continue
-    soup_4_find = soup_3_find.tbody.tr.next_sibling
-    for i in range(14):
 
-        # 写入excel相应列
-        booksheet.write(n, i, soup_4_find.td.next_sibling.string) 
+    # 有用的信息域
+    soup_4_find = soup_3_find.tbody.tr.next_sibling
+
+    # 写入名称到excel相应列
+    soup_5_find = soup_4_find.span
+    booksheet.write(n, 0, soup_5_find.a.string)
+    booksheet.write(n, 1, soup_5_find.font.string)
+
+    # 写入除名称之外的信息到excel相应列
+    
+    for i in range(1, 15):
+        booksheet.write(n, i, soup_4_find.td.next_sibling.string)
         soup_4_find = soup_4_find.next_sibling
-        
+
+    # 写入中科院SCI期刊分区(最新版本)到execl相应列
+    soup_6_find = soup_4_find.next_sibling.td.next_sibling.table.tr.next_sibling.td
+    soup_7_find = soup_6_find.next_sibling
+    soup_8_find = soup_7_find.next_sibling
+    soup_9_find = soup_8_find.next_sibling
+
+    # 大类学科
+    booksheet.write(n, 15, soup_6_find.next_element)
+
+    # 大类学科分区
+    booksheet.write(n, 16, soup_6_find.span.string)
+
+    # 小类学科
+    booksheet.write(n, 17, soup_7_find.table.tr.td.get_text(strip=True))
+
+    # 小类学科分区
+    booksheet.write(n, 18, soup_7_find.table.tr.td.next_sibling.string)
+
+    # 是否为top期刊
+    booksheet.write(n, 19, soup_8_find.string)
+
+    # 是否为综述期刊
+    booksheet.write(n, 20, soup_9_find.string)
+
+    # 写入SCI期刊coverage
+    soup_10_find = soup_4_find.next_sibling.next_sibling
+    booksheet.write(n, 21, soup_10_find.td.next_sibling.a.string)
+
+    # 写入PubMed Central (PMC)链接
+    soup_11_find = soup_10_find.next_sibling
+    booksheet.write(n, 22, soup_11_find.td.next_sibling.a.string)
+
 # 保存此次爬取的数据
-newWb.save("test_xlwt.xls")
+newWb.save("1.xls")

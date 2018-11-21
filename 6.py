@@ -1,4 +1,4 @@
-# 本程序适用于查询除名称外的其他数据，数据采用一次保留
+# 本程序适用于查询名称，数据采用一次保留
 
 # 导入库requests、beautifulsoup、xlrd（用于读execl）、xlutils(用于写execl)
 import requests
@@ -26,14 +26,14 @@ booksheet = newWb.get_sheet(sheet_number)
 # 定义requests制作的html页面字符编码，如无特殊要求，可不修改设置
 code = "utf-8"
 
-# 输入要查询的数据范围，该网站的数据范围为0-10568
-start = 10568
-end = 10570
+# 输入要查询的数据范围，该网站的数据范围为0-10567
+start = 0
+end = 10567
 
 # 开始循环爬取数据
 for n in range(start, end):
 
-    # 获取网站的html码
+    # 获取网站的代码
     url = "http://www.letpub.com.cn/index.php?journalid=" + \
         str(n)+"&page=journalapp&view=detail"
     r = requests.get(url)
@@ -58,12 +58,11 @@ for n in range(start, end):
             soup_3_find = soup_3_find.next_sibling
     except AttributeError:
         continue
-    soup_4_find = soup_3_find.tbody.tr.next_sibling
-    for i in range(14):
 
-        # 写入excel相应列
-        booksheet.write(n, i, soup_4_find.td.next_sibling.string) 
-        soup_4_find = soup_4_find.next_sibling
-        
+    # 将数据写入excel表中
+    soup_4_find = soup_3_find.tbody.tr.next_sibling.span
+    booksheet.write(n, 0, soup_4_find.a.string)
+    booksheet.write(n, 1, soup_4_find.font.string)
+
 # 保存此次爬取的数据
 newWb.save("test_xlwt.xls")

@@ -1,4 +1,4 @@
-# 本程序适用于查询除名称外的其他数据，数据采用每采集10个保存一次
+# 本程序适用于查询期刊名称，数据采用每采集10个保存一次
 
 # 导入库requests、beautifulsoup、xlrd（用于读execl）、xlutils(用于写execl)
 import requests
@@ -59,12 +59,11 @@ for i in range(start, end):
                 soup_3_find = soup_3_find.next_sibling
         except AttributeError:
             continue
-        soup_4_find = soup_3_find.tbody.tr.next_sibling
-        for i in range(14):
 
-            # 写入excel相应列
-            booksheet.write(n, i, soup_4_find.td.next_sibling.string)
-            soup_4_find = soup_4_find.next_sibling
+        # 写入excel相应列
+        soup_4_find = soup_3_find.tbody.tr.next_sibling.span
+        booksheet.write(n, 0, soup_4_find.a.string)
+        booksheet.write(n, 1, soup_4_find.font.string)
 
     # 保存内存中的excel表
     newWb.save("test_xlwt.xls")
